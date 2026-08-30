@@ -1,0 +1,235 @@
+menu "ESP32-P4 Audio Recorder Configuration"
+
+
+    menu "SDMMC Configuration"
+
+        config EXAMPLE_FORMAT_IF_MOUNT_FAILED
+            bool "Format the card if mount failed"
+            default n
+            help
+                If this config item is set, format_if_mount_failed will be set to true and the card will be formatted if
+                the mount has failed.
+
+        config EXAMPLE_FORMAT_SD_CARD
+            bool "Format the card as a part of the example"
+            default n
+            help
+                If this config item is set, the card will be formatted as a part of the example.
+
+        choice EXAMPLE_SDMMC_BUS_WIDTH
+            prompt "SD/MMC bus width"
+            default EXAMPLE_SDMMC_BUS_WIDTH_4
+            help
+                Select the bus width of SD or MMC interface.
+                Note that even if 1 line mode is used, D3 pin of the SD card must have a pull-up resistor connected.
+                Otherwise the card may enter SPI mode, the only way to recover from which is to cycle power to the card.
+
+            config EXAMPLE_SDMMC_BUS_WIDTH_4
+                bool "4 lines (D0 - D3)"
+
+            config EXAMPLE_SDMMC_BUS_WIDTH_1
+                bool "1 line (D0)"
+        endchoice
+
+        choice EXAMPLE_SDMMC_SPEED_MODE
+            prompt "SD/MMC speed mode"
+            default EXAMPLE_SDMMC_SPEED_DS
+
+            config EXAMPLE_SDMMC_SPEED_DS
+                bool "Default Speed"
+            config EXAMPLE_SDMMC_SPEED_HS
+                bool "High Speed"
+            config EXAMPLE_SDMMC_SPEED_UHS_I_SDR50
+                bool "UHS-I SDR50 (100 MHz, 50 MB/s)"
+                depends on SOC_SDMMC_UHS_I_SUPPORTED
+            config EXAMPLE_SDMMC_SPEED_UHS_I_DDR50
+                bool "UHS-I DDR50 (50 MHz, 50 MB/s)"
+                depends on SOC_SDMMC_UHS_I_SUPPORTED
+        endchoice
+
+        if SOC_SDMMC_USE_GPIO_MATRIX
+
+            config EXAMPLE_PIN_CMD
+                int "CMD GPIO number"
+                default 35 if IDF_TARGET_ESP32S3
+                default 44 if IDF_TARGET_ESP32P4
+
+            config EXAMPLE_PIN_CLK
+                int "CLK GPIO number"
+                default 36 if IDF_TARGET_ESP32S3
+                default 43 if IDF_TARGET_ESP32P4
+
+            config EXAMPLE_PIN_D0
+                int "D0 GPIO number"
+                default 37 if IDF_TARGET_ESP32S3
+                default 39 if IDF_TARGET_ESP32P4
+
+            if EXAMPLE_SDMMC_BUS_WIDTH_4
+
+                config EXAMPLE_PIN_D1
+                    int "D1 GPIO number"
+                    default 38 if IDF_TARGET_ESP32S3
+                    default 40 if IDF_TARGET_ESP32P4
+
+                config EXAMPLE_PIN_D2
+                    int "D2 GPIO number"
+                    default 33 if IDF_TARGET_ESP32S3
+                    default 41 if IDF_TARGET_ESP32P4
+
+                config EXAMPLE_PIN_D3
+                    int "D3 GPIO number"
+                    default 34 if IDF_TARGET_ESP32S3
+                    default 42 if IDF_TARGET_ESP32P4
+
+            endif  # EXAMPLE_SDMMC_BUS_WIDTH_4
+
+        endif  # SOC_SDMMC_USE_GPIO_MATRIX
+
+        config EXAMPLE_DEBUG_PIN_CONNECTIONS
+            bool "Debug sd pin connections and pullup strength"
+            default n
+
+        if !SOC_SDMMC_USE_GPIO_MATRIX
+            config EXAMPLE_PIN_CMD
+                depends on EXAMPLE_DEBUG_PIN_CONNECTIONS
+                default 15 if IDF_TARGET_ESP32
+
+            config EXAMPLE_PIN_CLK
+                depends on EXAMPLE_DEBUG_PIN_CONNECTIONS
+                default 14 if IDF_TARGET_ESP32
+
+            config EXAMPLE_PIN_D0
+                depends on EXAMPLE_DEBUG_PIN_CONNECTIONS
+                default 2 if IDF_TARGET_ESP32
+
+            if EXAMPLE_SDMMC_BUS_WIDTH_4
+
+                config EXAMPLE_PIN_D1
+                    depends on EXAMPLE_DEBUG_PIN_CONNECTIONS
+                    default 4 if IDF_TARGET_ESP32
+
+                config EXAMPLE_PIN_D2
+                    depends on EXAMPLE_DEBUG_PIN_CONNECTIONS
+                    default 12 if IDF_TARGET_ESP32
+
+                config EXAMPLE_PIN_D3
+                    depends on EXAMPLE_DEBUG_PIN_CONNECTIONS
+                    default 13 if IDF_TARGET_ESP32
+
+            endif  # EXAMPLE_SDMMC_BUS_WIDTH_4
+        endif
+
+        if EXAMPLE_SDMMC_BUS_WIDTH_4
+
+            config EXAMPLE_ADC_PIN_D1
+                int "D1 mapped ADC pin"
+                depends on EXAMPLE_ENABLE_ADC_FEATURE
+                default 0 if IDF_TARGET_ESP32
+                default 1
+
+            config EXAMPLE_ADC_PIN_D2
+                int "D2 mapped ADC pin"
+                depends on EXAMPLE_ENABLE_ADC_FEATURE
+                default 5 if IDF_TARGET_ESP32
+                default 1
+
+            config EXAMPLE_ADC_PIN_D3
+                int "D3 mapped ADC pin"
+                depends on EXAMPLE_ENABLE_ADC_FEATURE
+                default 4 if IDF_TARGET_ESP32
+                default 1
+
+        endif  # EXAMPLE_SDMMC_BUS_WIDTH_4
+
+        config EXAMPLE_SD_PWR_CTRL_LDO_INTERNAL_IO
+            depends on SOC_SDMMC_IO_POWER_EXTERNAL
+            bool "SD power supply comes from internal LDO IO (READ HELP!)"
+            default y
+            help
+                Only needed when the SD card is connected to specific IO pins which can be used for high-speed SDMMC.
+                Please read the schematic first and check if the SD VDD is connected to any internal LDO output.
+                Unselect this option if the SD card is powered by an external power supply.
+
+        config EXAMPLE_SD_PWR_CTRL_LDO_IO_ID
+            depends on SOC_SDMMC_IO_POWER_EXTERNAL && EXAMPLE_SD_PWR_CTRL_LDO_INTERNAL_IO
+            int "LDO ID"
+            default 4 if IDF_TARGET_ESP32P4
+            help
+                Please read the schematic first and input your LDO ID.
+    endmenu
+
+
+
+
+menu "I2C Configuration"
+
+    config EXAMPLE_I2C_SCL_GPIO
+        int "I2C SCL GPIO"
+        default 8
+        help
+            ES8311 I2C clock pin.
+
+    config EXAMPLE_I2C_SDA_GPIO
+        int "I2C SDA GPIO"
+        default 7
+        help
+            ES8311 I2C data pin.
+
+endmenu
+
+
+
+menu "I2S Audio Configuration"
+
+    config EXAMPLE_SAMPLE_RATE
+        int "Audio Sample Rate"
+        default 16000
+        help
+            Typical:
+            16000 = Voice
+            44100 = Music
+
+    config EXAMPLE_BIT_SAMPLE
+        int "Bits Per Sample"
+        default 16
+
+    config EXAMPLE_RECORD_TIME
+        int "Recording Time (seconds)"
+        default 10
+
+    config EXAMPLE_I2S_MCK_GPIO
+        int "I2S MCLK GPIO"
+        default 13
+
+    config EXAMPLE_I2S_BCK_GPIO
+        int "I2S BCLK GPIO"
+        default 12
+
+    config EXAMPLE_I2S_WS_GPIO
+        int "I2S WS/LRCK GPIO"
+        default 10
+
+    config EXAMPLE_I2S_DO_GPIO
+        int "I2S DATA OUT GPIO"
+        default 9
+
+    config EXAMPLE_I2S_DI_GPIO
+        int "I2S DATA IN GPIO"
+        default 11
+
+endmenu
+
+
+
+menu "Speaker / Amplifier Configuration"
+
+    config EXAMPLE_PA_ENABLE_GPIO
+        int "Speaker PA Enable GPIO"
+        default 53
+        help
+            GPIO used to enable speaker amplifier.
+
+endmenu
+
+
+endmenu

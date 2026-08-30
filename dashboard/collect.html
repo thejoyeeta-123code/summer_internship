@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BLE Sensor Data Collection Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div>
+	  <p class="eyebrow"><a href="index.html" style="color:inherit;text-decoration:none;">&larr; Back to Home</a></p>
+      <h1>Sensor Data Collection</h1>
+      <p class="subtitle">Connect to your BLE device, visualize the live sensor stream, and export your CSV.</p>
+    </div>
+    <div class="status-card" id="connectionStatus">
+      <span class="status-dot offline"></span>
+      <div>
+        <strong>Disconnected</strong>
+        <small>No BLE device selected</small>
+      </div>
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="panel config-panel">
+      <div class="panel-head">
+        <h2>1. BLE Connection</h2>
+      </div>
+      <p style="color: #667085; font-size: 0.85rem; margin-bottom: 1.5rem;">
+        Click below to open the browser's scanner and select your BLE module.
+      </p>
+      <div class="button-row">
+        <button class="primary" id="connectBtn">Connect BLE Device</button>
+        <button id="disconnectBtn" disabled>Disconnect</button>
+      </div>
+    </section>
+
+    <section class="panel label-panel">
+      <div class="panel-head">
+        <h2>2. Session Labels</h2>
+      </div>
+
+      <label>Subject ID<input id="subjectId" placeholder="S01" value="S01" /></label>
+      
+      <label>
+        Class : Activity : Emotion
+        <select id="classActivityEmotion">
+          <option value="0:IDLE:CALM">0 : IDLE : CALM</option>
+          <option value="1:CARRY:CONTENT">1 : CARRY : CONTENT</option>
+          <option value="2:GENTLE SHAKE:PLAYFUL">2 : GENTLE SHAKE : PLAYFUL</option>
+          <option value="3:FORCE SHAKE:FRUSTRATED">3 : FORCE SHAKE : FRUSTRATED</option>
+          <option value="4:SLEEPING:TIRED">4 : SLEEPING : TIRED</option>
+          <option value="5:LAUGHING:HAPPY">5 : LAUGHING : HAPPY</option>
+          <option value="6:CRYING:SAD">6 : CRYING : SAD</option>
+          <option value="7:THROW:ANGRY">7 : THROW : ANGRY</option>
+        </select>
+      </label>
+
+      <div class="button-row" style="margin-top: 1rem;">
+        <button class="record" id="recordBtn" disabled>Start Recording</button>
+        <button id="markerBtn" disabled>Add Marker</button>
+      </div>
+    </section>
+
+    <section class="panel metrics-panel">
+      <div class="panel-head">
+        <h2>3. Live Status</h2>
+      </div>
+      <div class="metrics-grid">
+        <div class="metric"><small>Samples</small><strong id="sampleCount">0</strong></div>
+        <div class="metric"><small>Recording</small><strong id="recordingState">No</strong></div>
+        <div class="metric"><small>Rate</small><strong id="sampleRate">0 Hz</strong></div>
+        <div class="metric"><small>Buffer</small><strong id="bufferedRows">0</strong></div>
+      </div>
+      <div class="last-packet">
+        <small>Last packet</small>
+        <pre id="lastPacket">Waiting for BLE data...</pre>
+      </div>
+    </section>
+
+    <section class="panel chart-panel wide">
+      <div class="panel-head">
+        <h2>4. Live Visualization</h2>
+        <div class="chart-controls">
+          <label>Window
+            <select id="windowSize">
+              <option value="100">100 samples</option>
+              <option value="250" selected>250 samples</option>
+              <option value="500">500 samples</option>
+            </select>
+          </label>
+          <label>Plot fields
+            <input id="plotFields" value="ax,ay,az,gx,gy,gz" />
+          </label>
+        </div>
+      </div>
+      <canvas id="liveChart" width="1200" height="420"></canvas>
+      <div class="legend" id="chartLegend"></div>
+    </section>
+
+    <section class="panel parser-panel wide">
+      <div class="panel-head">
+        <h2>5. CSV Export</h2>
+      </div>
+      <p style="color: #667085; font-size: 0.9rem;">
+        Exported files are named: <strong>subjectID_classID_activity.csv</strong>
+      </p>
+      <div class="button-row wrap" style="margin-top: 1rem;">
+        <button id="downloadCsvBtn" disabled>Download CSV</button>
+        <button id="clearBtn">Clear Memory</button>
+      </div>
+    </section>
+  </main>
+  <script src="collect.js"></script>
+</body>
+</html>
